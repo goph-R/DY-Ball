@@ -35,6 +35,9 @@ only per-game files: `app.lua`, `config.lua`, `assets.lua`, `scripts/`,
   game logic — the single exception is the steering zone in `input.lua`, which
   is screen-relative on purpose (on a tall phone the field's bottom edge sits
   above the thumb).
+- `dd.md` is the design document — screen bands, level goal, bricks, the
+  fifteen pickups and their atlas positions. Read it before adding a game
+  mechanic, and add to its "Open questions" rather than inventing an answer.
 - `scripts/layout.lua` is the design, in numbers — every figure measured off
   `design/arkanoid-6b.jpg` by pixel scan, not eyeballed. **Nothing else should
   contain a design-space magic number.** When the mockup changes, change it
