@@ -29,12 +29,20 @@ Everything in `scripts/` is authored in design units and mapped at draw time,
 so the numbers in the code match the designs 1:1. The engine's `UI_VIRTUAL_H`
 is irrelevant to this game and stays at its default.
 
-## One finger
+## Controls
 
-Both mobile hosts are single-pointer: Android handles no pointer ids, the web
-host captures one pointer. The paddle is steered by a relative slide in a band
-at the bottom of the **screen** — not the bottom of the field, which on a tall
-phone sits above the thumb.
+**Touch**: a relative slide in a band at the bottom of the **screen** — not the
+bottom of the field, which on a tall phone sits above the thumb. **Mouse**: the
+ship's centre follows the pointer's x directly, continuously and with no zone,
+which is what a desktop player expects.
+
+Which one is chosen by *hover*, not by `platform`: a mouse emits moves with no
+button held and a touch screen cannot. `platform` is ambiguous here — `"web"`
+covers both a desktop browser and a phone browser, and the desktop host does
+not set it at all.
+
+On touch, both mobile hosts are single-pointer: Android handles no pointer ids,
+the web host captures one pointer.
 
 Two consequences, both deliberate:
 

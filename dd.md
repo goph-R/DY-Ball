@@ -36,6 +36,39 @@ in the mockup it reads `0/14` beside an orange brick, meaning *destroy 14
 orange bricks*. The level is complete when the counter fills — not necessarily
 when the field is empty. Each level names a brick type and a count.
 
+## Controls
+
+Two schemes, picked by the device rather than by the platform.
+
+**Touch.** A relative slide inside a band at the bottom of the *screen*. The
+finger drags the ship rather than being it: absolute would park the ship under
+the thumb, where the player cannot see it. The band is measured against the
+screen, not the field, because on a tall phone the field's bottom edge sits
+above the thumb — and it is deliberately larger than the strip drawn in the
+mockup, which is a hint rather than a hit box.
+
+**Mouse.** The ship's centre follows the pointer's x directly, continuously,
+with no button held and no zone. That is what a desktop player expects, and
+the cursor is visible so nothing is hidden. Sensitivity does not apply —
+absolute pointing has no gain to tune.
+
+**Choosing between them.** By *hover*: a mouse emits moves with no button
+held, a touch screen cannot. The first hover switches to mouse mode for good.
+`platform` would be the obvious alternative and is not good enough — `"web"`
+covers both a desktop browser and a phone browser, and the desktop host does
+not set it at all. Hover also gets a mouse plugged into an Android device
+right, which that host already reports.
+
+Both mobile hosts park their cursor at -1e5 on touch release, exactly because
+touch has no pointer-leave, so that synthetic move is filtered out before it
+can be mistaken for a hover.
+
+**One finger.** The mobile hosts are strictly single-pointer: Android handles
+no pointer ids, the web host captures one pointer. So the steering finger is
+the only one, which is why shooting is automatic and why the press that starts
+a slide is also what frees a held ball. On a mouse, any click frees it, since
+the ship is already tracking the pointer.
+
 ## Bricks
 
 Every brick is **60 x 30** — a 2:1 tile — and they sit flush, so the pitch

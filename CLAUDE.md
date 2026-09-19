@@ -42,10 +42,12 @@ only per-game files: `app.lua`, `config.lua`, `assets.lua`, `scripts/`,
   `design/arkanoid-6b.jpg` by pixel scan, not eyeballed. **Nothing else should
   contain a design-space magic number.** When the mockup changes, change it
   here and nowhere else.
-- `scripts/input.lua` is single-pointer by necessity, not by choice: neither
-  mobile host reports a second finger. Do not add a gesture that needs one.
-  Shooting is on a timer and a stuck ball is freed by the same press that
-  begins a slide, both for this reason. It also computes its own deltas from
+- `scripts/input.lua` holds two schemes — a relative touch slide and absolute
+  mouse tracking — chosen by *hover*, not by `platform` (`"web"` cannot tell a
+  desktop browser from a phone). It is single-pointer by necessity on touch,
+  not by choice: neither mobile host reports a second finger. Do not add a
+  gesture that needs one. Shooting is on a timer and a held ball is freed by
+  the same press that begins a slide, both for this reason. It also computes its own deltas from
   the absolute x — `onMouseMove`'s `dx` comes from `PointerEvent.movementX` on
   web, which iOS Safari leaves at 0 for touch.
 - `android/` is an APK wrapper, not a port. It has **no Kotlin and no C**: the

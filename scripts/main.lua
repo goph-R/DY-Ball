@@ -139,8 +139,9 @@ function play:renderDebug()
     local lines = {
         string.format("view %.0fx%.0f  scale %.3f", view.vw, view.vh, view.scale),
         string.format("field %.0fx%.0f in view", view.w, view.h),
-        string.format("paddle %s  x=%.0f  %s", self.paddle.kind, self.paddle.x,
-                      input.isSteering() and "STEERING" or ""),
+        string.format("ship %s  x=%.0f  [%s]%s", self.paddle.kind, self.paddle.x,
+                      input.isMouse() and "mouse" or "touch",
+                      input.isSteering() and "  STEERING" or ""),
     }
     for i, s in ipairs(lines) do
         drawText(s, view.x(12), view.y(12 + (i - 1) * 26), {
@@ -150,8 +151,8 @@ function play:renderDebug()
     end
 end
 
--- One finger: the press that starts steering also frees a stuck ball, so the
--- sticky paddle needs no second gesture.
+-- The press that frees a held ball is the same one that starts a slide on
+-- touch, or any click on a mouse -- see input.lua.
 function play:mouseDown(x, y, b)
     if input.pointerDown(x, y) then
         self.stuck = false
@@ -159,8 +160,8 @@ function play:mouseDown(x, y, b)
 end
 
 function play:mouseMove(x, y)
-    local dx = input.pointerMove(x)
-    if dx ~= 0 then self.paddle:moveBy(dx) end
+    local nx = input.steer(self.paddle.x, x, y)
+    if nx then self.paddle:moveTo(nx) end
 end
 
 function play:mouseUp()

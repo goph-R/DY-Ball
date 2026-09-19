@@ -44,12 +44,15 @@ end
 
 function M:halfW() return self.w / 2 end
 
--- Move by a delta and clamp to the field. The clamp is why input.lua can hand
--- over raw deltas without knowing anything about the play area.
-function M:moveBy(dx)
+-- Put the centre here, clamped to the field. The clamp lives on this side so
+-- input.lua can hand over a position without knowing the play area or the
+-- current width -- which changes with the grow and shrink pickups.
+function M:moveTo(x)
     local half = self:halfW()
-    self.x = math.max(half, math.min(view.DESIGN_W - half, self.x + dx))
+    self.x = math.max(half, math.min(view.DESIGN_W - half, x))
 end
+
+function M:moveBy(dx) self:moveTo(self.x + dx) end
 
 -- Modes replace each other: the ship is one of three sprites, so a ship pickup
 -- switches to the new mode rather than stacking (dd.md, "Ship modes replace
