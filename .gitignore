@@ -30,3 +30,11 @@ stderr.txt
 *.swp
 *~
 .DS_Store
+
+# Design folder. The PSD masters are ~40MB each and are art-department source,
+# not build input — the game needs exported PNGs. They stay out of git, along
+# with superseded iterations; only the current 720x1280 mockups are tracked.
+# Keep the masters backed up somewhere outside this repo.
+design/*
+!design/arkanoid-6.jpg
+!design/arkanoid-6b.jpg

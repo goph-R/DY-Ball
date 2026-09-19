@@ -48,6 +48,17 @@ using `onMouseMove`'s `dx`: the web host derives that from
 `PointerEvent.movementX`, which is not populated for touch pointers on iOS
 Safari.
 
+## Design
+
+`design/arkanoid-6.jpg` is the reference sheet — all three ships and the full
+bonus icon set laid out. `design/arkanoid-6b.jpg` is the clean gameplay
+mockup: HUD bar, brick formation, a falling bonus, the shooting ship mid-burst
+and the thumb strip at the bottom. Both are 720x1280, so they measure 1:1
+against the design units used throughout `scripts/`.
+
+The PSD masters are not in this repo — they are ~40 MB each and are art
+source, not build input. Keep them backed up outside git.
+
 ## Status
 
 Scaffold. `view.lua`, `input.lua` and `paddle.lua` are real; the bricks, the
