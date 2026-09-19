@@ -217,7 +217,9 @@ are felt at any point in a level, and the product is clamped.
 ## Pickups
 
 Pickups drop from bricks when they are hit. Fifteen types, falling as
-**40 x 40** tiles. The tile colour is the whole legend:
+**40 x 40** tiles. They **fall upright — no rotation, no animation**, so it is
+one frame each: 15 tiles, full stop. The bomb brick is the only animated thing
+in the game. The tile colour is the whole legend:
 
 - **Grey** — paddle size and ball count
 - **Blue** — beneficial
