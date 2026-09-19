@@ -31,9 +31,35 @@ local ROWS = 6
 
 function play:enter()
     self.paddle = Paddle.new()
-    self.ball   = { x = view.DESIGN_W / 2, y = 800, vx = 260, vy = -420,
+    self.ball   = { x = view.DESIGN_W / 2, y = 800, vx = 0, vy = 0,
                     r = layout.BALL_R }
     self.stuck  = true
+
+    -- Ramp state is per LEVEL, not per ball: with triple balls in play a
+    -- per-ball counter would climb three times as fast for the same rally.
+    self.hits     = 0
+    self.speedMul = 1      -- pickups 12 and 14 live here
+end
+
+-- Ramped speed, then the pickup multiplier, then the absolute clamp. The ramp
+-- caps on its own so a level plateaus; the clamp is wider so a Fast Ball is
+-- still felt after it has.
+function play:ballSpeed()
+    local s = layout.BALL_SPEED * layout.BALL_SPEED_GAIN ^ self.hits
+    s = math.min(s, layout.BALL_SPEED_MAX) * self.speedMul
+    return math.max(layout.BALL_SPEED_FLOOR,
+                    math.min(s, layout.BALL_SPEED_CEILING))
+end
+
+-- Leave the ship at an angle set by where it was struck: dead centre goes
+-- straight up, the very edge goes BALL_MAX_ANGLE off vertical. Speed is set
+-- from the ramp rather than reflected, so the ramp only ever steps here.
+function play:launch(offset)
+    local a = math.max(-1, math.min(1, offset)) * layout.BALL_MAX_ANGLE
+    local s = self:ballSpeed()
+    self.ball.vx =  math.sin(a) * s
+    self.ball.vy = -math.cos(a) * s
+    self.stuck   = false
 end
 
 function play:update(dt)
@@ -63,14 +89,18 @@ function play:update(dt)
     local p = self.paddle
     if b.vy > 0 and b.y + b.r >= Paddle.SURFACE and b.y - b.r <= Paddle.Y + Paddle.H
        and b.x >= p.x - p:halfW() and b.x <= p.x + p:halfW() then
-        b.y  = Paddle.SURFACE - b.r
-        b.vy = -b.vy
-        -- Angle off the contact point, the usual brick-breaker feel.
-        b.vx = (b.x - p.x) / p:halfW() * 420
-        if p.kind == Paddle.STICKY then self.stuck = true end
+        b.y = Paddle.SURFACE - b.r
+        self.hits = self.hits + 1
+        if p.kind == Paddle.STICKY then
+            self.stuck = true
+        else
+            self:launch((b.x - p.x) / p:halfW())
+        end
     end
 
-    -- Floor: reset rather than lose a life, this being a scaffold.
+    -- Floor: re-stick rather than lose a life, this being a scaffold. The ramp
+    -- is deliberately NOT reset here — whether losing a ball should cost the
+    -- accumulated speed is still open (dd.md).
     if b.y - b.r > view.DESIGN_H then self.stuck = true end
 end
 
@@ -142,6 +172,8 @@ function play:renderDebug()
         string.format("ship %s  x=%.0f  [%s]%s", self.paddle.kind, self.paddle.x,
                       input.isMouse() and "mouse" or "touch",
                       input.isSteering() and "  STEERING" or ""),
+        string.format("speed %.0f  hits %d  x%.2f", self:ballSpeed(), self.hits,
+                      self.speedMul),
     }
     for i, s in ipairs(lines) do
         drawText(s, view.x(12), view.y(12 + (i - 1) * 26), {
@@ -154,8 +186,8 @@ end
 -- The press that frees a held ball is the same one that starts a slide on
 -- touch, or any click on a mouse -- see input.lua.
 function play:mouseDown(x, y, b)
-    if input.pointerDown(x, y) then
-        self.stuck = false
+    if input.pointerDown(x, y) and self.stuck then
+        self:launch(layout.BALL_RELEASE_OFFSET)
     end
 end
 
@@ -174,7 +206,9 @@ function play:keyDown(name)
     elseif name == "1" then self.paddle:setKind(Paddle.NORMAL)
     elseif name == "2" then self.paddle:setKind(Paddle.STICKY)
     elseif name == "3" then self.paddle:setKind(Paddle.SHOOTING)
-    elseif name == "space" then self.stuck = false
+    elseif name == "space" then
+        if self.stuck then self:launch(layout.BALL_RELEASE_OFFSET) end
+    elseif name == "r"     then self.hits = 0
     end
 end
 

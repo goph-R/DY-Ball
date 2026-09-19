@@ -131,8 +131,13 @@ in each direction.
 Two things detonate it:
 
 - Pickup **#4**, which sets off every bomb brick on the field at once.
-- Pickup **#7**, which gives the ball the same blast on every bounce, turning
-  any brick it hits into a bomb.
+- Pickup **#7**, which turns every brick the ball hits into a bomb.
+
+This is DX-Ball 2's **Fireball**, near enough word for word: "when it hits, the
+brick as well as all directly adjacent bricks explode. Basically, any brick
+that is hit is treated as an explosive brick." Worth knowing that in the
+original it also **cuts the score** for the bricks it destroys, to stop a
+2%-chance pickup from being a free level. Whether to copy that is open.
 
 **Chains.** A blast that removes another bomb brick **detonates it too**, and
 so on outward. One ball hitting one bomb in a dense cluster can therefore take
@@ -154,6 +159,44 @@ the strip with `srcX` advanced by 60 per frame (`drawRegion` takes
 `srcX/srcY/srcW/srcH`), which keeps it to a single entry in `assets.lua`.
 `engine.animation` is tweens only — no frame-stepping helper — so the cycle is
 a modulo timer the game owns. It is the only animated brick.
+
+## Ball speed
+
+The ball speeds up across a level. **The ramp keys off paddle hits, not
+wall-clock.** A time ramp keeps accelerating while the holder ship has the ball
+stuck to it, so stalling banks free speed and thinking is punished; hit-based
+also pauses by itself between lives. Ramp state is per *level*, not per ball —
+with triple balls a per-ball counter would climb three times as fast for the
+same rally.
+
+### What DX-Ball 2 actually does
+
+Its internal speeds are documented: the ball is released at **13**, accelerates
+naturally to **18**, and Slow Ball floors it at **9**. Above **21** it gains a
+white particle trail and one-shots multi-hit bricks.
+
+The useful part is the ratios, since the absolute units are its own:
+
+| | Ratio to base | Here |
+|---|---|---|
+| Release | 1.00 | 500 u/s — 1.38s straight traverse |
+| Natural cap | **1.38x** | 700 u/s — 0.99s |
+| Slow Ball floor | 0.69x | 350 u/s |
+| "Super speed" | 1.62x | ~810 u/s — not implemented |
+
+The natural ramp is only **1.38x across a whole level** — far gentler than it
+feels while playing, and much gentler than a first guess suggests. Base speed
+is ours to choose since it sets the scale; the ratios are not guesses.
+
+Two things the original does that we do not, both worth considering:
+
+- It accelerates on **any bounce**, not only paddle hits.
+- **Long air time without a bounce lowers the speed again**, though rarely
+  below about 0.94x of the cap. That is a quiet self-balancing mechanism: a
+  ball looping in open space slows back down.
+
+Pickups 12 and 14 multiply the ramped speed rather than replacing it, so they
+are felt at any point in a level, and the product is clamped.
 
 ## Pickups
 
@@ -177,7 +220,7 @@ sprites at 1:1.
 | 4 | 24, 705 | blue | orange brick, arrows out | Detonate every bomb brick on the field |
 | 5 | 74, 705 | blue | large sphere | Bigger ball |
 | 6 | 124, 705 | red | small sphere | Smaller ball |
-| 7 | 24, 756 | blue | meteor | Every bounce detonates: the brick and its four neighbours |
+| 7 | 24, 756 | blue | meteor | Every brick the ball hits is treated as a bomb brick — it and its four neighbours go |
 | 8 | 74, 756 | blue | field schematic | Next level |
 | 9 | 124, 756 | red | skull | Death |
 | 10 | 24, 807 | blue | paddle with turrets | Shooting ship |
@@ -238,9 +281,15 @@ the code happens to do first.
 7. **Bricks down (15).** What happens when the lowest row reaches the ship?
 8. **Drops.** Which bricks drop pickups, at what rate, and how many may be
    falling at once?
-9. **Bomb animation.** How many frames, and at what rate? It sets the atlas
+9. **Fireball scoring.** DX-Ball 2 drops destroyed bricks to a token score
+   while its Fireball is active, so the pickup clears the field without also
+   winning the scoreboard. Copy that, or let it pay full?
+10. **Speed ramp details.** Ours steps on paddle hits; the original steps on
+   any bounce and *decays* during long air time. Worth trying once the tempo
+   feels right — and does losing a ball reset the ramp?
+11. **Bomb animation.** How many frames, and at what rate? It sets the atlas
    budget: at 60x30 each frame is cheap, but the count has to be chosen before
    the sheet is packed.
-10. **Colour legend.** #2 shrinks the paddle — harmful — but is grey, while
+12. **Colour legend.** #2 shrinks the paddle — harmful — but is grey, while
    every other harmful pickup (6, 9, 12, 15) is red. Is grey a third category
    (size and count), or should #2 be red?

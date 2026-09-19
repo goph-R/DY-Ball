@@ -35,6 +35,47 @@ M.SHIP_INSET = 10
 
 M.BALL_R = 11      -- 21 units across in the mockup
 
+-- Ball speed, in design units per second. It is 692 units from the underside of
+-- the HUD (FIELD_TOP) to the ship's surface, so the straight-down traverse runs
+-- 1.38s at the base speed and 0.49s at the cap. Angled shots take longer.
+--
+-- The ramp keys off PADDLE HITS, not wall-clock. A time ramp keeps
+-- accelerating while the holder ship has the ball stuck to it, so stalling
+-- banks free speed and thinking is punished; hits also pause by themselves
+-- between lives. See dd.md, "Ball speed".
+--
+-- The RATIOS come from DX-Ball 2, which documents its internal speeds: the
+-- ball starts at 13, accelerates naturally to 18, and Slow Ball floors it at 9.
+-- So the natural ramp is only 1.38x across a level and the slow floor is 0.69x
+-- of base -- far gentler than it feels while playing. Base speed is ours to
+-- pick (it sets the scale); the ratios are not guesses.
+M.BALL_SPEED      = 500     -- at the start of a level; 1.38s straight traverse
+M.BALL_SPEED_MAX  = 700     -- 1.38x, the natural cap; 0.99s traverse
+M.BALL_SPEED_GAIN = 1.005   -- compounding per paddle hit; ~70 hits to the cap
+
+-- Pickups 12 (faster) and 14 (slower) multiply the ramped speed rather than
+-- replacing it, so they are felt at any point in a level. The product is
+-- clamped to these: the floor is DX-Ball 2's 0.69x Slow Ball limit, and the
+-- ceiling sits above the natural cap so a Fast Ball still does something once
+-- the ramp has plateaued.
+--
+-- DX-Ball 2 also has a threshold at 1.62x of base (~810 here) where the ball
+-- gains a particle trail and one-shots multi-hit bricks. Not implemented; a
+-- good thing to steal later.
+M.BALL_SPEED_FLOOR   = 350   -- 0.69x
+M.BALL_SPEED_CEILING = 900
+
+-- How far off vertical the ball leaves the ship when struck at its very edge.
+-- 1.05 rad is about 60 degrees; higher makes the ship steer more and the
+-- rallies wilder.
+M.BALL_MAX_ANGLE = 1.05
+
+-- Angle the ball leaves at when released from the ship, as a fraction of
+-- BALL_MAX_ANGLE. Not zero: straight up comes straight back down onto a ship
+-- that has not moved, is struck dead centre, and goes straight up again -- a
+-- vertical loop the player cannot break out of without deliberately missing.
+M.BALL_RELEASE_OFFSET = 0.35
+
 -- The thumb strip, as drawn: x 52..668, y 1147..1201 — 617 wide and centred on
 -- 360 to within half a unit. This is the visual affordance only. input.lua's
 -- live zone is deliberately larger (see the note there), so a thumb that lands
