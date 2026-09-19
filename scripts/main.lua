@@ -31,34 +31,44 @@ local ROWS = 6
 
 function play:enter()
     self.paddle = Paddle.new()
-    self.ball   = { x = view.DESIGN_W / 2, y = 800, vx = 0, vy = 0,
-                    r = layout.BALL_R }
-    self.stuck  = true
+    -- The ball carries a unit DIRECTION; speed is separate and shared, because
+    -- it rises and falls independently of where the ball happens to be going.
+    self.ball  = { x = view.DESIGN_W / 2, y = 800, dx = 0, dy = -1,
+                   r = layout.BALL_R }
+    self.stuck = true
 
-    -- Ramp state is per LEVEL, not per ball: with triple balls in play a
-    -- per-ball counter would climb three times as fast for the same rally.
-    self.hits     = 0
+    -- Speed is state, not a function of a counter: it climbs on bounces and
+    -- decays in flight, so there is no hit count it could be derived from. Per
+    -- LEVEL, not per ball -- with triple balls in play, per-ball speed would
+    -- climb three times as fast for the same rally.
+    self.speed    = layout.BALL_SPEED
+    self.bounces  = 0      -- debug only
     self.speedMul = 1      -- pickups 12 and 14 live here
 end
 
--- Ramped speed, then the pickup multiplier, then the absolute clamp. The ramp
--- caps on its own so a level plateaus; the clamp is wider so a Fast Ball is
--- still felt after it has.
+-- What the ball actually travels at: the ramped speed, then the pickup
+-- multiplier, then the absolute clamp.
 function play:ballSpeed()
-    local s = layout.BALL_SPEED * layout.BALL_SPEED_GAIN ^ self.hits
-    s = math.min(s, layout.BALL_SPEED_MAX) * self.speedMul
     return math.max(layout.BALL_SPEED_FLOOR,
-                    math.min(s, layout.BALL_SPEED_CEILING))
+                    math.min(self.speed * self.speedMul,
+                             layout.BALL_SPEED_CEILING))
+end
+
+-- Every bounce feeds the ramp -- wall, brick or ship alike, which is DX-Ball
+-- 2's model and the reason a dense field speeds the ball up while an empty one
+-- lets it ease off.
+function play:bounce()
+    self.bounces = self.bounces + 1
+    self.speed = math.min(self.speed * layout.BALL_SPEED_GAIN,
+                          layout.BALL_SPEED_MAX)
 end
 
 -- Leave the ship at an angle set by where it was struck: dead centre goes
--- straight up, the very edge goes BALL_MAX_ANGLE off vertical. Speed is set
--- from the ramp rather than reflected, so the ramp only ever steps here.
+-- straight up, the very edge goes BALL_MAX_ANGLE off vertical.
 function play:launch(offset)
     local a = math.max(-1, math.min(1, offset)) * layout.BALL_MAX_ANGLE
-    local s = self:ballSpeed()
-    self.ball.vx =  math.sin(a) * s
-    self.ball.vy = -math.cos(a) * s
+    self.ball.dx =  math.sin(a)
+    self.ball.dy = -math.cos(a)
     self.stuck   = false
 end
 
@@ -72,25 +82,35 @@ function play:update(dt)
         return
     end
 
+    -- Free flight bleeds speed back toward the base. Frame-rate independent:
+    -- the per-second rate is raised to dt rather than applied once a frame.
+    self.speed = math.max(layout.BALL_SPEED,
+                          self.speed * layout.BALL_SPEED_DECAY ^ dt)
+
     local b = self.ball
-    b.x = b.x + b.vx * dt
-    b.y = b.y + b.vy * dt
+    local s = self:ballSpeed()
+    b.x = b.x + b.dx * s * dt
+    b.y = b.y + b.dy * s * dt
 
     -- Field walls, in design units — identical on every device, which is the
     -- whole point of the fixed box.
-    if b.x - b.r < 0             then b.x = b.r;                  b.vx = -b.vx end
-    if b.x + b.r > view.DESIGN_W then b.x = view.DESIGN_W - b.r;   b.vx = -b.vx end
+    if b.x - b.r < 0 then
+        b.x = b.r;                 b.dx = -b.dx; self:bounce()
+    end
+    if b.x + b.r > view.DESIGN_W then
+        b.x = view.DESIGN_W - b.r; b.dx = -b.dx; self:bounce()
+    end
     -- Ceiling is the underside of the HUD, not the top of the design box.
     if b.y - b.r < layout.FIELD_TOP then
-        b.y = layout.FIELD_TOP + b.r; b.vy = -b.vy
+        b.y = layout.FIELD_TOP + b.r; b.dy = -b.dy; self:bounce()
     end
 
     -- Paddle.
     local p = self.paddle
-    if b.vy > 0 and b.y + b.r >= Paddle.SURFACE and b.y - b.r <= Paddle.Y + Paddle.H
+    if b.dy > 0 and b.y + b.r >= Paddle.SURFACE and b.y - b.r <= Paddle.Y + Paddle.H
        and b.x >= p.x - p:halfW() and b.x <= p.x + p:halfW() then
         b.y = Paddle.SURFACE - b.r
-        self.hits = self.hits + 1
+        self:bounce()
         if p.kind == Paddle.STICKY then
             self.stuck = true
         else
@@ -172,8 +192,9 @@ function play:renderDebug()
         string.format("ship %s  x=%.0f  [%s]%s", self.paddle.kind, self.paddle.x,
                       input.isMouse() and "mouse" or "touch",
                       input.isSteering() and "  STEERING" or ""),
-        string.format("speed %.0f  hits %d  x%.2f", self:ballSpeed(), self.hits,
-                      self.speedMul),
+        string.format("speed %.0f (%.2fx)  bounces %d  mul x%.2f",
+                      self:ballSpeed(), self.speed / layout.BALL_SPEED,
+                      self.bounces, self.speedMul),
     }
     for i, s in ipairs(lines) do
         drawText(s, view.x(12), view.y(12 + (i - 1) * 26), {
@@ -208,7 +229,7 @@ function play:keyDown(name)
     elseif name == "3" then self.paddle:setKind(Paddle.SHOOTING)
     elseif name == "space" then
         if self.stuck then self:launch(layout.BALL_RELEASE_OFFSET) end
-    elseif name == "r"     then self.hits = 0
+    elseif name == "r"     then self.speed = layout.BALL_SPEED; self.bounces = 0
     end
 end
 

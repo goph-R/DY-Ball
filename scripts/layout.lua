@@ -39,19 +39,39 @@ M.BALL_R = 11      -- 21 units across in the mockup
 -- the HUD (FIELD_TOP) to the ship's surface, so the straight-down traverse runs
 -- 1.38s at the base speed and 0.49s at the cap. Angled shots take longer.
 --
--- The ramp keys off PADDLE HITS, not wall-clock. A time ramp keeps
--- accelerating while the holder ship has the ball stuck to it, so stalling
--- banks free speed and thinking is punished; hits also pause by themselves
--- between lives. See dd.md, "Ball speed".
+-- The ramp keys off BOUNCES, not wall-clock, and decays during free flight --
+-- DX-Ball 2's model. A time ramp would keep accelerating while the holder ship
+-- has the ball stuck to it, so stalling would bank free speed.
+--
+-- Because speed both rises and falls it is *state*, not a function of a
+-- counter: see play.speed in main.lua. The two rates set an equilibrium rather
+-- than a ramp to a cap, and that is the point -- a dense field bounces often
+-- and the ball climbs, a nearly-empty one gives long free flights and the ball
+-- eases off, exactly when the last few bricks are hardest to reach. See dd.md.
 --
 -- The RATIOS come from DX-Ball 2, which documents its internal speeds: the
 -- ball starts at 13, accelerates naturally to 18, and Slow Ball floors it at 9.
 -- So the natural ramp is only 1.38x across a level and the slow floor is 0.69x
 -- of base -- far gentler than it feels while playing. Base speed is ours to
 -- pick (it sets the scale); the ratios are not guesses.
-M.BALL_SPEED      = 500     -- at the start of a level; 1.38s straight traverse
-M.BALL_SPEED_MAX  = 700     -- 1.38x, the natural cap; 0.99s traverse
-M.BALL_SPEED_GAIN = 1.005   -- compounding per paddle hit; ~70 hits to the cap
+M.BALL_SPEED       = 500    -- at the start of a level; 1.38s straight traverse
+M.BALL_SPEED_MAX   = 700    -- 1.38x, the natural cap; 0.99s traverse
+-- These two do not act independently: together they set an EQUILIBRIUM BOUNCE
+-- RATE, which is the number that actually governs the feel.
+--
+--     rate = -ln(DECAY) / ln(GAIN)  =  2.5 bounces/sec
+--
+-- Bounce more often than that and the ball climbs to the cap; less often and
+-- it eases back to base. Tune with that in mind: raising GAIN or softening
+-- DECAY both lower the bar. Decay is calibrated against the original, where
+-- extended air time drops the ball from 18 to about 16-17 -- here 10 seconds
+-- without a bounce costs 10% of the cap, which is the same fall.
+--
+-- NOTE: the scaffold has no brick collisions yet, so only walls and the ship
+-- bounce -- around 1/sec, below the equilibrium. Speed will sit at base until
+-- bricks are in. That is the model working, not a bug.
+M.BALL_SPEED_GAIN  = 1.004  -- per bounce: wall, brick or ship
+M.BALL_SPEED_DECAY = 0.99   -- per second of flight, pulling back toward base
 
 -- Pickups 12 (faster) and 14 (slower) multiply the ramped speed rather than
 -- replacing it, so they are felt at any point in a level. The product is

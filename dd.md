@@ -188,12 +188,28 @@ The natural ramp is only **1.38x across a whole level** — far gentler than it
 feels while playing, and much gentler than a first guess suggests. Base speed
 is ours to choose since it sets the scale; the ratios are not guesses.
 
-Two things the original does that we do not, both worth considering:
+### The model
 
-- It accelerates on **any bounce**, not only paddle hits.
-- **Long air time without a bounce lowers the speed again**, though rarely
-  below about 0.94x of the cap. That is a quiet self-balancing mechanism: a
-  ball looping in open space slows back down.
+Both of the original's mechanisms, because they only make sense together:
+
+- Speed climbs on **any bounce** — wall, brick or ship alike.
+- It **decays during free flight**, pulling back toward the base speed.
+
+So speed is *state*, not a function of a hit counter, and the two rates set an
+**equilibrium bounce rate** rather than a ramp:
+
+```
+rate = -ln(DECAY) / ln(GAIN)  =  2.5 bounces/sec
+```
+
+Bounce more often than that and the ball climbs to the cap; less often and it
+eases back down. That is the whole point of the pairing: a dense field bounces
+constantly and the ball speeds up, while a nearly-empty one gives long free
+flights and the ball eases off — exactly when the last few bricks are hardest
+to reach. The game paces itself, with no level-by-level difficulty table.
+
+It also means the equilibrium rate is the real tuning knob, not either constant
+on its own.
 
 Pickups 12 and 14 multiply the ramped speed rather than replacing it, so they
 are felt at any point in a level, and the product is clamped.
@@ -284,9 +300,10 @@ the code happens to do first.
 9. **Fireball scoring.** DX-Ball 2 drops destroyed bricks to a token score
    while its Fireball is active, so the pickup clears the field without also
    winning the scoreboard. Copy that, or let it pay full?
-10. **Speed ramp details.** Ours steps on paddle hits; the original steps on
-   any bounce and *decays* during long air time. Worth trying once the tempo
-   feels right — and does losing a ball reset the ramp?
+10. **Does losing a ball reset the speed?** It currently does not — the ramp
+   is per level, so a fresh ball inherits whatever the last one had built up.
+   The alternative is a reset per life, which is kinder and costs the tension
+   a long rally earns.
 11. **Bomb animation.** How many frames, and at what rate? It sets the atlas
    budget: at 60x30 each frame is cheap, but the count has to be chosen before
    the sheet is packed.
