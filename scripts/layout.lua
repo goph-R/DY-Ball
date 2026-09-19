@@ -17,14 +17,13 @@ M.HAZARD_H = 17
 M.FIELD_TOP    = M.HUD_H
 M.FIELD_BOTTOM = 1280
 
--- Bricks. The 60-unit pitch is confirmed twice over in the mockup: a 9-brick
--- colour row spanning x 120..659 (540 = 9 x 60) and an 8-brick steel row
--- spanning x 120..598 (479 = 8 x 60). The mockup places bricks ad hoc, so the
--- grid origin below is the symmetric version: 10 columns, 60 each, centred.
-M.BRICK_W, M.BRICK_H = 60, 50
-M.PITCH_X, M.PITCH_Y = 60, 60
+-- Bricks are always 60x30 — a 2:1 tile — and sit flush, so the pitch equals
+-- the size in both axes. Ten columns fill x 60..660, which is exactly what the
+-- reference row in arkanoid-6.jpg does (its 1-hit row spans x 60..659).
+M.BRICK_W, M.BRICK_H = 60, 30
+M.PITCH_X, M.PITCH_Y = 60, 30
 M.COLS   = 10
-M.GRID_X = 60      -- 60 .. 660, leaving equal 60-unit margins
+M.GRID_X = 60      -- 60 .. 660, equal 60-unit margins either side
 M.GRID_Y = 365     -- first brick row in the mockup
 
 -- Ship. All three variants are 125 wide; the art box is y 962..1002. The body

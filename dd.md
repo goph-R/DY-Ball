@@ -2,11 +2,15 @@
 
 What the game is made of. The source of truth for anything visual is
 `design/arkanoid-6.jpg` (the reference sheet: three ships, the full pickup set)
-and `design/arkanoid-6b.jpg` (the gameplay mockup). Both are exactly 720x1280,
+and `design/arkanoid-6b.jpg` (the gameplay mockup). `arkanoid-6.jpg` reads top
+to bottom as: the brick types, then an example level, then the pickups that
+drop from bricks. Both files are exactly 720x1280,
 so every figure here is in design units and maps 1:1 onto the coordinates in
 `scripts/layout.lua`.
 
 Measurements below were taken by pixel scan of those files, not estimated.
+
+Atlas cell sizes: **bricks 60 x 30, pickups 40 x 40.**
 
 ## Screen
 
@@ -18,7 +22,7 @@ Measurements below were taken by pixel scan of those files, not estimated.
 | Thumb strip (drawn affordance) | y 1147 – 1201, x 52 – 668 |
 | Ship | 125 x 41, top at y 962 |
 | Ball | radius 11 |
-| Brick | 60 x 50 on a 60-unit pitch |
+| Brick | 60 x 30, flush (pitch = size) |
 
 The ship sits ~180 units above the thumb strip: the steering finger must never
 cover it.
@@ -34,28 +38,59 @@ when the field is empty. Each level names a brick type and a count.
 
 ## Bricks
 
-Ordinary bricks are cleared by one or more hits. Two types matter to the
-pickups:
+Every brick is **60 x 30** — a 2:1 tile — and they sit flush, so the pitch
+equals the size. Ten columns fill x 60..660 across the field. The colours are
+the original DX-Ball palette.
 
-- **Bomb bricks** — the bright orange ones, with stripes that animate. Pickup
-  #4 detonates every bomb brick on the field at once.
-- A bomb detonation removes the brick **and its four orthogonal neighbours**
-  (up, down, left, right). Pickup #7 gives the ball that same behaviour on
-  every bounce.
+Eleven types, in the order the reference sheet lists them:
+
+| # | Type | Hits | Notes |
+|---|---|---|---|
+| 1 | Metal | — | **Indestructible.** No damaged variant; it is never cleared and never counts toward the level goal |
+| 2 | Green | 1 or 2 | |
+| 3 | Teal | 1 or 2 | |
+| 4 | Blue | 1 or 2 | |
+| 5 | Purple | 1 or 2 | |
+| 6 | Red | 1 or 2 | |
+| 7 | Orange | 1 or 2 | |
+| 8 | Yellow | 1 or 2 | |
+| 9 | Rock | 1 or 2 | The 2-hit variant is the dark cracked stone, the 1-hit the pale smooth one |
+| 10 | Pink | 2 | Becomes visible on the second hit |
+| 11 | Bomb | — | Orange/yellow with animating stripes. Detonating it removes the brick **and its four orthogonal neighbours** |
+
+### One hit or two
+
+Each colour exists in two variants. The 2-hit one carries an inset plate; the
+1-hit one is plain bevelled. On the reference sheet the 2-hit variants are the
+upper row and the 1-hit variants the lower — that row is also where the metal
+brick and the pink brick appear, so the lower row reads left to right as the
+full type list.
+
+Metal has no variant: it cannot be destroyed at all. Bomb is its own thing
+rather than a damage state.
+
+### Bombs
+
+The bomb brick's stripes animate, so it is visible at a glance. Two things
+detonate it:
+
+- Pickup **#4**, which sets off every bomb brick on the field at once.
+- Pickup **#7**, which gives the ball the same blast on every bounce, turning
+  any brick it hits into a bomb.
 
 ## Pickups
 
-Fifteen types, falling as 40x40 tiles. The tile colour is the whole legend:
+Pickups drop from bricks when they are hit. Fifteen types, falling as
+**40 x 40** tiles. The tile colour is the whole legend:
 
 - **Grey** — paddle size and ball count
 - **Blue** — beneficial
 - **Red** — harmful
 
-Positions are the tile's top-left corner in `design/arkanoid-6.jpg`, for
-cutting the atlas. The grid is 3 columns x 5 rows, 40x40 tiles on a 50-unit
-pitch, columns at x 24 / 74 / 124 and rows at y 655 / 705 / 756 / 807 / 858.
-The falling tile in the gameplay mockup is also 40x40, so these are the
-in-game sprites at 1:1.
+Positions below are the tile's top-left corner in `design/arkanoid-6.jpg`,
+where the set is laid out 3 columns x 5 rows on a 50-unit pitch. The tile
+falling in the gameplay mockup is 40x40 too, so the sheet shows the in-game
+sprites at 1:1.
 
 | # | Pos | Tile | Icon | Effect |
 |---|---|---|---|---|
@@ -116,6 +151,9 @@ the code happens to do first.
 7. **Bricks down (15).** What happens when the lowest row reaches the ship?
 8. **Drops.** Which bricks drop pickups, at what rate, and how many may be
    falling at once?
-9. **Colour legend.** #2 shrinks the paddle — harmful — but is grey, while
+9. **The pink brick.** "Visible on the second hit" — so it starts invisible,
+   the first hit reveals it and the second clears it? If it is invisible, does
+   it still count toward the level goal, and is it hittable before it shows?
+10. **Colour legend.** #2 shrinks the paddle — harmful — but is grey, while
    every other harmful pickup (6, 9, 12, 15) is red. Is grey a third category
    (size and count), or should #2 be red?
