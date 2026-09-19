@@ -54,20 +54,34 @@ Eleven types, in the order the reference sheet lists them:
 | 6 | Red | 1 or 2 | |
 | 7 | Orange | 1 or 2 | |
 | 8 | Yellow | 1 or 2 | |
-| 9 | Rock | 1 or 2 | The 2-hit variant is the dark cracked stone, the 1-hit the pale smooth one |
-| 10 | Pink | 2 | Becomes visible on the second hit |
+| 9 | Rock | **3** | The only three-state brick. Very dark stone, then mid stone, then pale |
+| 10 | Pink | 2 | **Hidden.** Invisible until the first hit reveals it; the second clears it |
 | 11 | Bomb | — | Orange/yellow with animating stripes. Detonating it removes the brick **and its four orthogonal neighbours** |
 
-### One hit or two
+### Damage states
 
-Each colour exists in two variants. The 2-hit one carries an inset plate; the
-1-hit one is plain bevelled. On the reference sheet the 2-hit variants are the
-upper row and the 1-hit variants the lower — that row is also where the metal
-brick and the pink brick appear, so the lower row reads left to right as the
-full type list.
+A brick's art *is* its remaining hit count, so each destructible type ships one
+sprite per state. The reference sheet stacks them with the most durable state
+at the top and the about-to-break state at the bottom, so the bottom row reads
+left to right as the full type list.
 
-Metal has no variant: it cannot be destroyed at all. Bomb is its own thing
-rather than a damage state.
+| Type | States |
+|---|---|
+| The seven colours | 2: plated (2 hits) above plain (1 hit) |
+| Rock | **3**: very dark, then mid, then pale |
+| Pink | 2, but the first is invisible — see below |
+| Metal | 1, and it is never destroyed |
+| Bomb | 1, animated |
+
+Rock is the only three-state brick, and its extra state is the very dark one
+sitting above the two rows on the sheet.
+
+### The pink brick
+
+A hidden brick, and deliberately annoying. It is **invisible** on the field
+until something hits it — the first hit reveals it, the second clears it. Two
+hits in total, but the player does not know it is there until they have spent
+one of them.
 
 ### Bombs
 
@@ -151,9 +165,6 @@ the code happens to do first.
 7. **Bricks down (15).** What happens when the lowest row reaches the ship?
 8. **Drops.** Which bricks drop pickups, at what rate, and how many may be
    falling at once?
-9. **The pink brick.** "Visible on the second hit" — so it starts invisible,
-   the first hit reveals it and the second clears it? If it is invisible, does
-   it still count toward the level goal, and is it hittable before it shows?
-10. **Colour legend.** #2 shrinks the paddle — harmful — but is grey, while
+9. **Colour legend.** #2 shrinks the paddle — harmful — but is grey, while
    every other harmful pickup (6, 9, 12, 15) is red. Is grey a third category
    (size and count), or should #2 be red?
