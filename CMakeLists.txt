@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+project(DY-Ball)
+set(ENGINE ${CMAKE_SOURCE_DIR}/../SOOB-Core)
+include(${ENGINE}/build/soob.cmake)
+soob_add_game(${PROJECT_NAME} main.cpp)

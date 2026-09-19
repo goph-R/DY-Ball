@@ -1,0 +1,32 @@
+# Build output
+*.o
+*.exe
+dyball
+build/
+raw/obj/
+dist/
+
+# Runtime DLLs — copied next to the exe from ../SOOB-Core/vendor* by the
+# Windows build scripts, so this repo doesn't carry its own ~4.7MB copy.
+SDL.dll
+OpenAL32.dll
+libwinpthread-1.dll
+
+# Engine Lua modules copied from ../SOOB-Core/ at build time.
+# Source of truth lives in SOOB-Core; this dir is regenerated on each build.
+scripts/engine/
+
+# F12 frame dumps (named from app.lua's id)
+*_shot_*.bmp
+
+# Temp/log files
+output.txt
+stdout.txt
+stderr.txt
+
+# Editor / OS noise
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
