@@ -51,6 +51,9 @@ function M:moveBy(dx)
     self.x = math.max(half, math.min(view.DESIGN_W - half, self.x + dx))
 end
 
+-- Modes replace each other: the ship is one of three sprites, so a ship pickup
+-- switches to the new mode rather than stacking (dd.md, "Ship modes replace
+-- each other"). Shots already in flight are left alone.
 function M:setKind(kind)
     self.kind  = kind
     self.timer = 0

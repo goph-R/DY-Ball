@@ -101,6 +101,15 @@ Two things detonate it:
 - Pickup **#7**, which gives the ball the same blast on every bounce, turning
   any brick it hits into a bomb.
 
+**Chains.** A blast that removes another bomb brick **detonates it too**, and
+so on outward. One ball hitting one bomb in a dense cluster can therefore take
+out a large part of the field, which is the point of them.
+
+This makes removal a queue rather than a loop. Each brick is marked removed at
+the moment it is *enqueued*, not when it is processed — otherwise a bomb
+reached from two directions is detonated twice, and two adjacent bombs
+enqueue each other forever.
+
 **The animation.** The bomb's orange/yellow stripes cycle continuously, which
 is what makes it readable at a glance among static bricks. On the original this
 was palette rotation; that is not available here — the renderer draws textured
@@ -165,6 +174,15 @@ Shooting is **automatic** while held. The hosts are single-pointer and the one
 finger is already steering, so there is no input left to fire with — see
 `scripts/input.lua`.
 
+### Ship modes replace each other
+
+The ship is always in exactly one of three modes — normal, shooting (#10) or
+holder (#13) — because it is one of three sprites. Picking one up while
+another is active **switches to the new one**: take the holder while shooting
+and the ship becomes a holder, losing the guns.
+
+So a ship pickup is never wasted and never stacks. The most recent one wins.
+
 ## Open questions
 
 Not yet decided; listed so they are decided on purpose rather than by whatever
@@ -172,9 +190,10 @@ the code happens to do first.
 
 1. **Duration.** Are 10, 11, 12, 13, 14 timed, or do they last until the ball
    is lost? A timer needs a HUD indicator; until-ball-lost does not.
-2. **Exclusivity.** The ship is one of three sprites, so shooting and sticky
-   cannot both be active. What does picking up one while the other is live do —
-   replace it, or is the second one wasted?
+2. **Switching away from holder.** If the ship is holding a ball and a
+   shooting pickup lands, the ball has to go somewhere — does it launch
+   immediately, on the next press, or is the switch deferred until it is
+   released?
 3. **Clamping.** Ball size has three authored steps; what does 5 do at "big"
    or 6 at "small"? Same for the speed pair, 12 and 14.
 4. **Triple balls.** Do ball modifiers apply to all three? Is a life lost when
@@ -186,13 +205,9 @@ the code happens to do first.
 7. **Bricks down (15).** What happens when the lowest row reaches the ship?
 8. **Drops.** Which bricks drop pickups, at what rate, and how many may be
    falling at once?
-9. **Chain reactions.** When a bomb's blast removes another bomb brick, does
-   that one detonate too? Chains are the fun answer and the expensive one —
-   they need the removal to be a queue rather than a loop, so that a brick
-   cleared mid-blast cannot be cleared twice.
-10. **Bomb animation.** How many frames, and at what rate? It sets the atlas
+9. **Bomb animation.** How many frames, and at what rate? It sets the atlas
    budget: at 60x30 each frame is cheap, but the count has to be chosen before
    the sheet is packed.
-11. **Colour legend.** #2 shrinks the paddle — harmful — but is grey, while
+10. **Colour legend.** #2 shrinks the paddle — harmful — but is grey, while
    every other harmful pickup (6, 9, 12, 15) is red. Is grey a third category
    (size and count), or should #2 be red?
