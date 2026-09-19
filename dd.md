@@ -56,7 +56,7 @@ Eleven types, in the order the reference sheet lists them:
 | 8 | Yellow | 1 or 2 | |
 | 9 | Rock | **3** | The only three-state brick. Very dark stone, then mid stone, then pale |
 | 10 | Pink | 2 | **Hidden.** Invisible until the first hit reveals it; the second clears it |
-| 11 | Bomb | — | Orange/yellow with animating stripes. Detonating it removes the brick **and its four orthogonal neighbours** |
+| 11 | Bomb | — | Orange/yellow, stripes animate on a frame cycle. Detonating it removes the brick **and its four adjacent neighbours** |
 
 ### Damage states
 
@@ -85,12 +85,33 @@ one of them.
 
 ### Bombs
 
-The bomb brick's stripes animate, so it is visible at a glance. Two things
-detonate it:
+**The blast.** A detonating bomb removes itself plus its four *adjacent*
+neighbours — up, down, left and right. Not the whole row and column: one brick
+in each direction.
+
+```
+        . X .
+        X B X          B = the bomb, X = also removed
+        . X .
+```
+
+Two things detonate it:
 
 - Pickup **#4**, which sets off every bomb brick on the field at once.
 - Pickup **#7**, which gives the ball the same blast on every bounce, turning
   any brick it hits into a bomb.
+
+**The animation.** The bomb's orange/yellow stripes cycle continuously, which
+is what makes it readable at a glance among static bricks. On the original this
+was palette rotation; that is not available here — the renderer draws textured
+quads with no indexed colour anywhere in the pipeline — so the cycle has to be
+**real frames in the atlas**, N tiles of 60x30.
+
+Either packing works: N separate regions stepped by name, or one region spanning
+the strip with `srcX` advanced by 60 per frame (`drawRegion` takes
+`srcX/srcY/srcW/srcH`), which keeps it to a single entry in `assets.lua`.
+`engine.animation` is tweens only — no frame-stepping helper — so the cycle is
+a modulo timer the game owns. It is the only animated brick.
 
 ## Pickups
 
@@ -165,6 +186,13 @@ the code happens to do first.
 7. **Bricks down (15).** What happens when the lowest row reaches the ship?
 8. **Drops.** Which bricks drop pickups, at what rate, and how many may be
    falling at once?
-9. **Colour legend.** #2 shrinks the paddle — harmful — but is grey, while
+9. **Chain reactions.** When a bomb's blast removes another bomb brick, does
+   that one detonate too? Chains are the fun answer and the expensive one —
+   they need the removal to be a queue rather than a loop, so that a brick
+   cleared mid-blast cannot be cleared twice.
+10. **Bomb animation.** How many frames, and at what rate? It sets the atlas
+   budget: at 60x30 each frame is cheap, but the count has to be chosen before
+   the sheet is packed.
+11. **Colour legend.** #2 shrinks the paddle — harmful — but is grey, while
    every other harmful pickup (6, 9, 12, 15) is red. Is grey a third category
    (size and count), or should #2 be red?
