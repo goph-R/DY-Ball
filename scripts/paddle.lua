@@ -9,7 +9,8 @@
 -- so there is no second input to fire with. Picking up the bonus arms it and
 -- it shoots by itself until the bonus is lost.
 
-local view = require "view"
+local view   = require "view"
+local layout = require "layout"
 
 local M = {}
 
@@ -17,10 +18,13 @@ M.NORMAL   = "normal"
 M.STICKY   = "sticky"
 M.SHOOTING = "shooting"
 
--- Design-space geometry. y is the top edge; the field's floor is DESIGN_H.
-M.W_DEFAULT = 160
-M.H         = 28
-M.Y         = view.DESIGN_H - 120
+-- Design-space geometry, straight from layout.lua (measured off the mockup).
+-- Y is the top of the ART; the body the ball actually meets is SHIP_INSET
+-- below it, which is what SURFACE is for.
+M.W_DEFAULT = layout.SHIP_W
+M.H         = layout.SHIP_H
+M.Y         = layout.SHIP_Y
+M.SURFACE   = layout.SHIP_Y + layout.SHIP_INSET
 
 M.FIRE_INTERVAL = 0.45   -- seconds between shots while SHOOTING
 M.SHOT_SPEED    = 900    -- design units / second, upward
@@ -71,7 +75,7 @@ end
 
 -- Two barrels, at the paddle's shoulders.
 function M:fire()
-    local inset = self:halfW() - 14
+    local inset = self:halfW() - 14   -- barrels sit at the shoulders
     for _, off in ipairs({ -inset, inset }) do
         self.shots[#self.shots + 1] = { x = self.x + off, y = M.Y }
     end

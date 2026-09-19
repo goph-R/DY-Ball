@@ -61,10 +61,19 @@ source, not build input. Keep them backed up outside git.
 
 ## Status
 
-Scaffold. `view.lua`, `input.lua` and `paddle.lua` are real; the bricks, the
-ball and the field are placeholder quads proving the fit and the steering on a
-device. Art, bonuses, levels and collision come next — see the `PLACEHOLDER`
-comment in `paddle.lua` for where the 9-patch ship art drops in.
+Scaffold. `view.lua`, `input.lua`, `layout.lua` and `paddle.lua` are real;
+everything drawn is a placeholder quad standing in for art named in the
+mockup, laid out on the measured constants so the geometry is already right.
+
+Measured from `arkanoid-6b.jpg`: HUD panel 0..274 with the hazard stripe as its
+bottom border, brick pitch 60 (confirmed twice — a 9-brick colour row over
+x 120..659 and an 8-brick steel row over x 120..598), ship 125 x 41 at y 962,
+ball radius 11, thumb strip x 52..668 / y 1147..1201, centred on 360 to within
+half a unit.
+
+Next: art and the atlas, the bonus set, level data, brick collision. The
+`PLACEHOLDER` comments mark where each drops in — `paddle.lua` has the one for
+the 9-patch ship.
 
 ## Setup
 

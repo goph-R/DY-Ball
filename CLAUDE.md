@@ -35,6 +35,10 @@ only per-game files: `app.lua`, `config.lua`, `assets.lua`, `scripts/`,
   game logic — the single exception is the steering zone in `input.lua`, which
   is screen-relative on purpose (on a tall phone the field's bottom edge sits
   above the thumb).
+- `scripts/layout.lua` is the design, in numbers — every figure measured off
+  `design/arkanoid-6b.jpg` by pixel scan, not eyeballed. **Nothing else should
+  contain a design-space magic number.** When the mockup changes, change it
+  here and nowhere else.
 - `scripts/input.lua` is single-pointer by necessity, not by choice: neither
   mobile host reports a second finger. Do not add a gesture that needs one.
   Shooting is on a timer and a stuck ball is freed by the same press that

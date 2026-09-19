@@ -23,6 +23,12 @@ local view = require "view"
 local M = {}
 
 -- Fraction of the screen height, measured from the bottom, that steers.
+--
+-- Deliberately larger than the strip drawn in the mockup (layout.STRIP_*,
+-- 55 units tall at the bottom of a 1280 field). The drawn strip is a hint
+-- about where to put the thumb; the live area has to forgive landing above it,
+-- and on a tall phone it also needs to cover the background bleed *below* the
+-- field, which is physically the lowest part of the screen.
 M.ZONE = 0.33
 
 -- Thumb travel to paddle travel. 1.0 means the thumb must cross the whole
